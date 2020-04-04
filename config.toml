@@ -1,0 +1,69 @@
+
+
+#####################################################################
+#
+# DATADIR: The directory where the input images are location
+# OUTPUTDIR: The directory where the output images and plots should be stored
+#
+# **Important Note**
+# --------------------
+# If the program is being run using a docker container, these directories
+# need to be linked to the container using volumes
+#
+# (i.e. -v $HOME/Repos/CMSC630_Project_1/datasets:/app/datasets)
+#
+#####################################################################
+DATA_DIR = "datasets/Cancerous_cell_smears"
+OUTPUT_DIR = "datasets/output/"
+
+# The number of process workers in the process pool for work on batches
+NUM_OF_PROCESSES = 10
+
+#################################################
+#
+# COLOR_CHANNEL:
+#
+# The color channel to select from the image
+# Possible values are "red", "blue", and "green"
+#
+#################################################
+COLOR_CHANNEL = "red"
+
+######################################################################
+#
+# SALT_PEPPER_STRENGTH and GAUSS_NOISE_STRENGTH:
+#
+# Respective strength/parameter for adding salt and pepper noise
+# and gaussian noise to the images.
+#
+# Values should be between (0 - 1)
+#
+####################################3#################################
+SALT_PEPPER_STRENGTH = 0.4
+GAUSS_NOISE_STRENGTH = 0.1
+
+#####################################################################
+#
+# LINEAR_MASK and MEDIAN_MASK:
+#
+# These are the mask sizes for the linear and median filter
+#
+# They must be square numbers (e.g. 1, 9, 16, etc.)
+# and equal to the size of the weights array
+#
+# LINEAR_WEIGHTS and MEDIAN_WEIGHTS:
+#
+# These are the actual weights used on the images to manipulate them
+#
+# The value for these must be square, 2D lists
+#
+#####################################################################
+LINEAR_MASK = 9
+LINEAR_WEIGHTS = [
+  [0, 0, 0],
+  [0, 1, 0],
+  [0, 0, 0]
+]
+
+MEDIAN_MASK = 1
+MEDIAN_WEIGHTS = [[1]]
