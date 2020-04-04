@@ -13,7 +13,7 @@ from PIL import Image
 from pathlib import Path
 from click import clear, echo, style, secho
 from multiprocessing import Pool, Queue, Manager
-from numba import njit, jit
+from numba import njit
 from matplotlib import pyplot as plt
 
 # timeit: decorator to time functions
@@ -434,67 +434,3 @@ def parallel_operations(files: List[Path], plot_q: Queue):
                 time_data += res[1]
 
     return time_data
-
-
-@click.command()
-@click.option(
-    "config_location",
-    "-c",
-    "--config",
-    envvar="CMSC630_CONFIG",
-    type=click.Path(exists=True),
-    default="config.toml",
-    show_default=True,
-)
-def main(config_location):
-    global conf
-    conf = toml.load(config_location)
-
-    clear()
-
-    base_path = Path(conf["DATA_DIR"])
-
-    files = list(base_path.glob("*.BMP"))
-    echo(
-        style("[INFO] ", fg="green")
-        + f"image directory: {str(base_path)}; {len(files)} images found"
-    )
-
-    Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
-
-    t0 = time.time()
-
-    # [!!!] Only for development
-    # DATA_SUBSET = 5
-    # files = files[:DATA_SUBSET]
-
-    with Manager() as manager:
-        plot_q = manager.Queue()
-        operation_time_data = parallel_operations(files, plot_q)
-        if platform == "darwin" or platform == "win32":
-            secho(
-                "\n\n"
-                + "[WARNING] MacOS and Windows require any GUI operation to be run in the main thread\n"
-                + "          matplotlib uses Tkinter, a GUI library, to generate plots\n"
-                + "          therefore plotting must be saved until the end and done synchronously\n\n"
-                + "          Use linux or run inside a docker container for better performance\n\n",
-                fg="red",
-            )
-
-            echo(style("[INFO] ", fg="green") + "exporting plots...")
-
-            export_plots(plot_q)
-
-    t_delta = time.time() - t0
-
-    echo("\n\n")
-    secho("Average operation time:", fg="green")
-    for k, v in operation_time_data.items():
-        echo(style("   ==> ", fg="green") + f"{k:20} : {(v / len(files)):8.2f} ms")
-
-    print()
-    secho(f"Total time: {t_delta:.2f} s", fg="green")
-
-
-if __name__ == "__main__":
-    main()
