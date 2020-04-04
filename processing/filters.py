@@ -3,7 +3,6 @@
 import time
 import toml
 import click
-import matplotlib
 import numpy as np
 from typing import List, Tuple
 from sys import platform
