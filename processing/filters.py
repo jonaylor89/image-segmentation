@@ -4,15 +4,15 @@ import time
 import toml
 import click
 import numpy as np
-from typing import List, Tuple
+from typing import List
 from sys import platform
 from collections import Counter
 from functools import partial
 from tqdm import tqdm
 from PIL import Image
 from pathlib import Path
-from click import clear, echo, style, secho
-from multiprocessing import Pool, Queue, Manager
+from click import echo, style
+from multiprocessing import Pool, Queue
 from numba import njit
 from matplotlib import pyplot as plt
 
@@ -46,36 +46,7 @@ def cumsum(a: np.array) -> np.array:
     return np.array(b)
 
 
-@njit(fastmath=True)
-def histogram(img_array: np.array) -> np.array:
-    """
-    >> h=zeros(256,1);              OR    >> h=zeros(256,1);
-    >> for l = 0 : 255                    >> for l = 0 : 255
-         for i = 1 : N                          h(l +1)=sum(sum(A == l));
-            for j = 1 : M                    end
-                if (A(i,j) == l)          >> bar(0:255,h);
-                    h(l +1) = h(l +1) +1;
-                end
-            end
-        end
-    end
-    >> bar(0:255,h);
-    """
 
-    # Create blank histogram
-    hist = np.zeros(256)
-
-    # Get size of pixel array
-    N = len(img_array)
-
-    for l in range(256):
-        for i in range(N):
-
-            # Loop through pixels to calculate histogram
-            if img_array.flat[i] == l:
-                hist[l] += 1
-
-    return hist
 
 
 @njit(fastmath=True)

@@ -1,16 +1,51 @@
 #!/usr/bin/env python3
+
 import time
 import toml
 import click
 from pathlib import Path
 from click import clear, echo, style, secho
 
+import numpy as np
+from numba import njit
 
-def dilation():
+
+@njit(fastmath=True)
+def histogram(img_array: np.array) -> np.array:
+    """
+    >> h=zeros(256,1);              OR    >> h=zeros(256,1);
+    >> for l = 0 : 255                    >> for l = 0 : 255
+         for i = 1 : N                          h(l +1)=sum(sum(A == l));
+            for j = 1 : M                    end
+                if (A(i,j) == l)          >> bar(0:255,h);
+                    h(l +1) = h(l +1) +1;
+                end
+            end
+        end
+    end
+    >> bar(0:255,h);
+    """
+
+    # Create blank histogram
+    hist = np.zeros(256)
+
+    # Get size of pixel array
+    N = len(img_array)
+
+    for l in range(256):
+        for i in range(N):
+
+            # Loop through pixels to calculate histogram
+            if img_array.flat[i] == l:
+                hist[l] += 1
+
+    return hist
+
+def morph_dilation():
     pass
 
 
-def erosion():
+def morph_erosion():
     pass
 
 
@@ -42,7 +77,7 @@ def canny_edge_detection():
     default="config.toml",
     show_default=True,
 )
-def main(config_location):
+def main(config_location: str):
     conf = toml.load(config_location)
 
     clear()
@@ -57,11 +92,10 @@ def main(config_location):
 
     Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
 
-    t0 = time.time()
-
     # [!!!] Only for development
-    # DATA_SUBSET = 5; files = files[:DATA_SUBSET]
+    DATA_SUBSET = 5; files = files[:DATA_SUBSET]
 
+    t0 = time.time()
     t_delta = time.time() - t0
 
     print()
