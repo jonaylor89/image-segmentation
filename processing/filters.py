@@ -44,9 +44,6 @@ def cumsum(a: np.array) -> np.array:
     return np.array(b)
 
 
-
-
-
 @njit(fastmath=True)
 def calculate_histogram(img_array: np.array) -> (np.array, np.array, np.array):
     """
@@ -88,9 +85,6 @@ def mean_square_error(original_img: np.array, quantized_img: np.array) -> int:
     mse = (np.square(original_img - quantized_img)).mean()
 
     return mse
-
-
-
 
 
 @njit
@@ -232,15 +226,6 @@ def median_filter(
     return median
 
 
-def export_image(img_arr: np.array, filename: str) -> None:
-    """
-    Exports a numpy array as a grey scale bmp image
-    """
-    img = Image.fromarray(img_arr)
-    img = img.convert("L")
-    img.save(conf["OUTPUT_DIR"] + filename + ".BMP")
-
-
 def export_plot(img_arr: np.array, filename: str) -> None:
     """
     exports a historgam as a matplotlib plot
@@ -271,15 +256,6 @@ def export_plots(plot_q: Queue()):
     te = time.time()
 
     echo(style("[INFO] ", fg="green") + f"exporting took {((te - ts) * 1000):.2f} ms")
-
-
-def get_image_data(filename: Path) -> np.array:
-    """
-    Converts a bmp image to a numpy array
-    """
-
-    with Image.open(filename) as img:
-        return np.array(img)
 
 
 def apply_operations(img_file: Path, plot_q: Queue):

@@ -4,12 +4,14 @@ import time
 import toml
 import click
 from pathlib import Path
+from PIL import Image
 from typing import List
 from click import clear, echo, style, secho
 
 import numpy as np
 from numba import njit
 
+conf = None
 
 @njit(fastmath=True)
 def histogram(img_array: np.array) -> np.array:
@@ -84,6 +86,24 @@ def select_channel(img_array: np.array, color: str = "red") -> np.array:
         return img_array[:, :, 2]
 
 
+def export_image(img_arr: np.array, filename: str) -> None:
+    """
+    Exports a numpy array as a grey scale bmp image
+    """
+    img = Image.fromarray(img_arr)
+    img = img.convert("L")
+    img.save(conf["OUTPUT_DIR"] + filename + conf["FILE_EXTENSION"])
+
+
+def get_image_data(filename: Path) -> np.array:
+    """
+    Converts a bmp image to a numpy array
+    """
+
+    with Image.open(filename) as img:
+        return np.array(img)
+
+
 @click.command()
 @click.option(
     "config_location",
@@ -95,13 +115,14 @@ def select_channel(img_array: np.array, color: str = "red") -> np.array:
     show_default=True,
 )
 def main(config_location: str):
+    global conf
     conf = toml.load(config_location)
 
     clear()
 
     base_path: Path = Path(conf["DATA_DIR"])
 
-    files: List = list(base_path.glob("*.BMP"))
+    files: List = list(base_path.glob(f"*{conf['FILE_EXTENSION']}"))
     echo(
         style("[INFO] ", fg="green")
         + f"image directory: {str(base_path)}; {len(files)} images found"
@@ -110,7 +131,8 @@ def main(config_location: str):
     Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
 
     # [!!!] Only for development
-    DATA_SUBSET = 5; files = files[:DATA_SUBSET]
+    DATA_SUBSET = 5
+    files = files[:DATA_SUBSET]
 
     t0 = time.time()
     t_delta = time.time() - t0
