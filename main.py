@@ -4,6 +4,7 @@ import time
 import toml
 import click
 from pathlib import Path
+from typing import List
 from click import clear, echo, style, secho
 
 import numpy as np
@@ -27,10 +28,10 @@ def histogram(img_array: np.array) -> np.array:
     """
 
     # Create blank histogram
-    hist = np.zeros(256)
+    hist: np.array = np.zeros(256)
 
     # Get size of pixel array
-    N = len(img_array)
+    N: int = len(img_array)
 
     for l in range(256):
         for i in range(N):
@@ -40,6 +41,7 @@ def histogram(img_array: np.array) -> np.array:
                 hist[l] += 1
 
     return hist
+
 
 def morph_dilation():
     pass
@@ -67,6 +69,21 @@ def canny_edge_detection():
     pass
 
 
+def select_channel(img_array: np.array, color: str = "red") -> np.array:
+    """
+    select_channel isolates a color channel from a RGB image represented as a numpy array.
+    """
+
+    if color == "red":
+        return img_array[:, :, 0]
+
+    elif color == "green":
+        return img_array[:, :, 1]
+
+    elif color == "blue":
+        return img_array[:, :, 2]
+
+
 @click.command()
 @click.option(
     "config_location",
@@ -82,9 +99,9 @@ def main(config_location: str):
 
     clear()
 
-    base_path = Path(conf["DATA_DIR"])
+    base_path: Path = Path(conf["DATA_DIR"])
 
-    files = list(base_path.glob("*.BMP"))
+    files: List = list(base_path.glob("*.BMP"))
     echo(
         style("[INFO] ", fg="green")
         + f"image directory: {str(base_path)}; {len(files)} images found"

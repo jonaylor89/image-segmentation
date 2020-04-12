@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import time
-import toml
-import click
 import numpy as np
 from typing import List
 from sys import platform
@@ -92,19 +90,7 @@ def mean_square_error(original_img: np.array, quantized_img: np.array) -> int:
     return mse
 
 
-def select_channel(img_array: np.array, color: str = "red") -> np.array:
-    """
-    select_channel isolates a color channel from a RGB image represented as a numpy array.
-    """
 
-    if color == "red":
-        return img_array[:, :, 0]
-
-    elif color == "green":
-        return img_array[:, :, 1]
-
-    elif color == "blue":
-        return img_array[:, :, 2]
 
 
 @njit
