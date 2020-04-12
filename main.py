@@ -3,15 +3,16 @@
 import time
 import toml
 import click
-from pathlib import Path
+import numpy as np
+from numba import njit
 from PIL import Image
+from pathlib import Path
 from typing import List
 from click import clear, echo, style, secho
 
-import numpy as np
-from numba import njit
 
 conf = None
+
 
 @njit(fastmath=True)
 def histogram(img_array: np.array) -> np.array:
@@ -66,7 +67,7 @@ def histogram_clustering():
     pass
 
 
-def canny_edge_detection():
+def canny_edge_detection() -> np.array:
     # https://towardsdatascience.com/canny-edge-detection-step-by-step-in-python-computer-vision-b49c3a2d8123
     pass
 
