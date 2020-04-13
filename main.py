@@ -3,13 +3,13 @@
 import time
 import toml
 import click
+from math import sqrt
 import numpy as np
 from numba import njit
 from PIL import Image
 from pathlib import Path
 from typing import List
 from click import clear, echo, style, secho
-
 
 conf = None
 
@@ -54,9 +54,31 @@ def morph_erosion():
     pass
 
 
-def kmeans():
+@njit(parallel=True)
+def kmeans(A, numCenter, numIter, N, D):
     # https://github.com/numba/numba/blob/master/examples/k-means/k-means_numba.py
-    pass
+    centroids = np.random.ranf((numCenter, D))
+
+    for l in range(numIter):
+        dist = np.array(
+            [
+                [
+                    sqrt(np.sum((A[i, :] - centroids[j, :]) ** 2))
+                    for j in range(numCenter)
+                ]
+                for i in range(N)
+            ]
+        )
+        labels = np.array([dist[i, :].argmin() for i in range(N)])
+
+        centroids = np.array(
+            [
+                [np.sum(A[labels == i, j]) / np.sum(labels == i) for j in range(D)]
+                for i in range(numCenter)
+            ]
+        )
+
+    return centroids
 
 
 def histogram_thresholding():
@@ -69,6 +91,10 @@ def histogram_clustering():
 
 def canny_edge_detection() -> np.array:
     # https://towardsdatascience.com/canny-edge-detection-step-by-step-in-python-computer-vision-b49c3a2d8123
+    pass
+
+
+def apply_operations(files: List[Path]) -> None:
     pass
 
 
@@ -136,6 +162,7 @@ def main(config_location: str):
     files = files[:DATA_SUBSET]
 
     t0 = time.time()
+    apply_operations(files)
     t_delta = time.time() - t0
 
     print()
