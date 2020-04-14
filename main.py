@@ -55,9 +55,9 @@ def morph_erosion():
 
 
 @njit(parallel=True)
-def kmeans(A, numCenter, numIter, N, D):
+def kmeans(A: np.array, numCenter: int, numIter: int, size: int, features: int) -> np.array:
     # https://github.com/numba/numba/blob/master/examples/k-means/k-means_numba.py
-    centroids = np.random.ranf((numCenter, D))
+    centroids = np.random.ranf((numCenter, features))
 
     for l in range(numIter):
         dist = np.array(
@@ -66,14 +66,14 @@ def kmeans(A, numCenter, numIter, N, D):
                     sqrt(np.sum((A[i, :] - centroids[j, :]) ** 2))
                     for j in range(numCenter)
                 ]
-                for i in range(N)
+                for i in range(size)
             ]
         )
-        labels = np.array([dist[i, :].argmin() for i in range(N)])
+        labels = np.array([dist[i, :].argmin() for i in range(size)])
 
         centroids = np.array(
             [
-                [np.sum(A[labels == i, j]) / np.sum(labels == i) for j in range(D)]
+                [np.sum(A[labels == i, j]) / np.sum(labels == i) for j in range(features)]
                 for i in range(numCenter)
             ]
         )

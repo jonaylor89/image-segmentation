@@ -9,7 +9,7 @@
 # If the program is being run using a docker container, these directories
 # need to be linked to the container using volumes
 #
-# (i.e. -v $HOME/Repos/CMSC630_Project_1/datasets:/app/datasets)
+# (i.e. -v $HOME/Repos/CMSC630_Project_2/datasets:/app/datasets)
 #
 #####################################################################
 DATA_DIR = "datasets/Cancerous_cell_smears"
