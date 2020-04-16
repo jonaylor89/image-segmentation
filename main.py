@@ -8,10 +8,10 @@ import numpy as np
 from numba import njit
 from PIL import Image
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 from click import clear, echo, style, secho
 
-conf = None
+conf: Optional[dict] = None
 
 
 @njit(fastmath=True)
@@ -34,24 +34,24 @@ def histogram(img_array: np.array) -> np.array:
     hist: np.array = np.zeros(256)
 
     # Get size of pixel array
-    N: int = len(img_array)
+    image_size: int = len(img_array)
 
-    for l in range(256):
-        for i in range(N):
+    for pixel_value in range(256):
+        for i in range(image_size):
 
             # Loop through pixels to calculate histogram
-            if img_array.flat[i] == l:
-                hist[l] += 1
+            if img_array.flat[i] == pixel_value:
+                hist[pixel_value] += 1
 
     return hist
 
 
-def morph_dilation():
-    pass
+def morph_dilation() -> np.array:
+    return np.zeros(5)
 
 
-def morph_erosion():
-    pass
+def morph_erosion() -> np.array:
+    return np.zeros(5)
 
 
 @njit(parallel=True)
@@ -81,28 +81,63 @@ def kmeans(A: np.array, numCenter: int, numIter: int, size: int, features: int) 
     return centroids
 
 
-def histogram_thresholding():
-    pass
+def histogram_thresholding() -> np.array:
+    return np.zeros()
 
 
-def histogram_clustering():
-    pass
+def histogram_clustering() -> np.array:
+    return np.zeros(5)
 
 
 def canny_edge_detection() -> np.array:
     # https://towardsdatascience.com/canny-edge-detection-step-by-step-in-python-computer-vision-b49c3a2d8123
-    pass
+    return np.zeros(5)
 
 
 def apply_operations(files: List[Path]) -> None:
-    pass
+    """
+    Image segmentation–requirement for the project part 2:
+    1. Implement one selected edge detection algorithm.
+    2. Implement dilation and erosion operators.
+    3. Apply segmentation into two groups –foreground (cells) and background (everything else).
+    4. Implement two segmentation techniques (they must be implemented by you, not API calls):
+        + histogram thresholding
+        + histogram clustering (basic approach using two clusters and k-means)
+    5. Present example results before and after edge detection
+        / dilation
+        / erosion
+        / segmentation for each respective class of cells (seven in total)
+    """
+
+    for file in files:
+        print(file.stem)
+
+        # Edge detection
+        edges = canny_edge_detection()
+
+        # Dilation
+        dilated = morph_dilation()
+
+        # Erosion
+        eroded = morph_erosion()
+
+        # Histogram Clustering Segmentation
+        segmented_clustering = histogram_clustering()
+
+        # Histogram Thresholding Segmentation
+        segmented_thresholding = histogram_thresholding()
+
+        export_image(edges, f"edges_{file.stem}.BMP")
+        export_image(dilated, f"dilated_{file.stem}.BMP")
+        export_image(eroded, f"eroded_{file.stem}.BMP")
+        export_image(segmented_clustering, f"seg_clusting_{file.stem}.BMP")
+        export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP")
 
 
 def select_channel(img_array: np.array, color: str = "red") -> np.array:
     """
     select_channel isolates a color channel from a RGB image represented as a numpy array.
     """
-
     if color == "red":
         return img_array[:, :, 0]
 

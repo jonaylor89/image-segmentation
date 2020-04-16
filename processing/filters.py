@@ -7,7 +7,6 @@ from sys import platform
 from collections import Counter
 from functools import partial
 from tqdm import tqdm
-from PIL import Image
 from pathlib import Path
 from click import echo, style
 from multiprocessing import Pool, Queue
@@ -20,12 +19,6 @@ def timeit(f, single_time_data):
         ts = time.time()
         result = f(*args, **kwargs)
         te = time.time()
-
-        """
-        echo(
-            style("[DEBUG] ", fg="green") + f"{f.__name__}  {((te - ts) * 1000):.2f} ms"
-        )
-        """
 
         single_time_data[f.__name__] = (te - ts) * 1000
 
@@ -87,35 +80,6 @@ def mean_square_error(original_img: np.array, quantized_img: np.array) -> int:
     return mse
 
 
-@njit
-def salt_pepper_noise(img_array: np.array, strength: int) -> np.array:
-    """
-    salt_pepper_noise randomly jumps through an image
-    and converts a certain percentage of pixels white or black.
-    The percentage is given in the strength parameter
-    and the percentage of white to black pixels is 50%.
-    """
-
-    s_vs_p = 0.5
-    out = np.copy(img_array)
-
-    # Generate Salt '1' noise
-    num_salt = np.ceil(strength * img_array.size * s_vs_p)
-
-    for i in range(int(num_salt)):
-        x = np.random.randint(0, img_array.shape[0] - 1)
-        y = np.random.randint(0, img_array.shape[1] - 1)
-        out[x][y] = 0
-
-    # Generate Pepper '0' noise
-    num_pepper = np.ceil(strength * img_array.size * (1.0 - s_vs_p))
-
-    for i in range(int(num_pepper)):
-        x = np.random.randint(0, img_array.shape[0] - 1)
-        y = np.random.randint(0, img_array.shape[1] - 1)
-        out[x][y] = 0
-
-    return out
 
 
 @njit

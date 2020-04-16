@@ -2,6 +2,8 @@
 # datasets
 datasets/
 
+# Python
+.mypy_cache/
 
 # text editors
 .idea/
