@@ -37,13 +37,19 @@ def select_channel(img_array: np.array, color: str = "red") -> np.array:
         return img_array[:, :, 2]
 
 
-# @njit(fastmath=True)
 def non_max_suppression(img, D):
     M, N = img.shape
     Z = np.zeros((M, N), dtype=np.int32)
     angle = D * 180.0 / np.pi
     angle[angle < 0] += 180
 
+    Z = fast_suppression(img, angle, N, M, Z)
+
+    return Z
+
+
+@njit(fastmath=True)
+def fast_suppression(img, angle, N, M, Z):
     for i in range(1, M - 1):
         for j in range(1, N - 1):
             try:
@@ -72,7 +78,7 @@ def non_max_suppression(img, D):
                 else:
                     Z[i, j] = 0
 
-            except IndexError as e:
+            except:
                 pass
 
     return Z
@@ -81,9 +87,10 @@ def non_max_suppression(img, D):
 # @njit(fastmath=True)
 def gaussian_kernel(size, sigma=1):
     size = int(size) // 2
-    x, y = np.mgrid[-size : size + 1, -size : size + 1]
+    x, y = np.mgrid[-size: size + 1, -size: size + 1]
     normal = 1 / (2.0 * np.pi * sigma ** 2)
     g = np.exp(-((x ** 2 + y ** 2) / (2.0 * sigma ** 2))) * normal
+
     return g
 
 
@@ -118,13 +125,13 @@ def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
 
     weak_i, weak_j = np.where((img <= highThreshold) & (img >= lowThreshold))
 
-    res[strong_i, strong_j] = strong
-    res[weak_i, weak_j] = weak
+    res[strong_i][strong_j] = strong
+    res[weak_i][weak_j] = weak
 
     return res, weak, strong
 
 
-# njit(fastmath=True)
+@njit(fastmath=True)
 def hysteresis(img, weak, strong=255):
     M, N = img.shape
     for i in range(1, M - 1):
@@ -132,19 +139,19 @@ def hysteresis(img, weak, strong=255):
             if img[i, j] == weak:
                 try:
                     if (
-                        (img[i + 1, j - 1] == strong)
-                        or (img[i + 1, j] == strong)
-                        or (img[i + 1, j + 1] == strong)
-                        or (img[i, j - 1] == strong)
-                        or (img[i, j + 1] == strong)
-                        or (img[i - 1, j - 1] == strong)
-                        or (img[i - 1, j] == strong)
-                        or (img[i - 1, j + 1] == strong)
+                            (img[i + 1, j - 1] == strong)
+                            or (img[i + 1, j] == strong)
+                            or (img[i + 1, j + 1] == strong)
+                            or (img[i, j - 1] == strong)
+                            or (img[i, j + 1] == strong)
+                            or (img[i - 1, j - 1] == strong)
+                            or (img[i - 1, j] == strong)
+                            or (img[i - 1, j + 1] == strong)
                     ):
                         img[i, j] = strong
                     else:
                         img[i, j] = 0
-                except IndexError as e:
+                except:
                     pass
     return img
 
@@ -173,7 +180,7 @@ def convolve(img_array: np.array, img_filter: np.array) -> np.array:
 
 @njit(parallel=True)
 def kmeans(
-    A: np.array, numCenter: int, numIter: int, size: int, features: int
+        A: np.array, numCenter: int, numIter: int, size: int, features: int
 ) -> np.array:
     # https://github.com/numba/numba/blob/master/examples/k-means/k-means_numba.py
     centroids = np.random.ranf((numCenter, features))

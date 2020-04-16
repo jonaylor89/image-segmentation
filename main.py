@@ -77,19 +77,14 @@ def canny_edge_detection(img_array: np.array) -> np.array:
     guass = gaussian_kernel(5)
 
     blurred_image = convolve(img_array, guass)
-    export_image(blurred_image, "edges_blurred.BMP", conf)
 
     sobel, theta = sobel_filters(blurred_image)
-    export_image(sobel, "edges_sobel.BMP", conf)
 
     suppresion = non_max_suppression(sobel, theta)
-    export_image(suppresion, "edges_suppresion.BMP", conf)
 
     threshold_image, weak, strong = threshold(suppresion)
-    export_image(threshold_image, "edges_threshold.BMP", conf)
 
     canny_image = hysteresis(threshold_image, weak, strong)
-    export_image(canny_image, "edges_canny.BMP", conf)
 
     return canny_image
 
@@ -110,7 +105,7 @@ def apply_operations(files: List[Path]) -> None:
     """
 
     for file in files:
-        print(f"operating on file.stem")
+        print(f"operating on {file.stem}")
 
         img = get_image_data(file)
         img = select_channel(img, "red")
