@@ -3,13 +3,23 @@
 import time
 import toml
 import click
-from math import sqrt
 import numpy as np
 from numba import njit
-from PIL import Image
 from pathlib import Path
 from typing import List, Optional
 from click import clear, echo, style, secho
+
+from utils import (
+    get_image_data,
+    export_image,
+    select_channel,
+    convolve,
+    gaussian_kernel,
+    sobel_filters,
+    non_max_suppression,
+    threshold,
+    hysteresis,
+)
 
 conf: Optional[dict] = None
 
@@ -54,33 +64,6 @@ def morph_erosion() -> np.array:
     return np.zeros(5)
 
 
-@njit(parallel=True)
-def kmeans(A: np.array, numCenter: int, numIter: int, size: int, features: int) -> np.array:
-    # https://github.com/numba/numba/blob/master/examples/k-means/k-means_numba.py
-    centroids = np.random.ranf((numCenter, features))
-
-    for l in range(numIter):
-        dist = np.array(
-            [
-                [
-                    sqrt(np.sum((A[i, :] - centroids[j, :]) ** 2))
-                    for j in range(numCenter)
-                ]
-                for i in range(size)
-            ]
-        )
-        labels = np.array([dist[i, :].argmin() for i in range(size)])
-
-        centroids = np.array(
-            [
-                [np.sum(A[labels == i, j]) / np.sum(labels == i) for j in range(features)]
-                for i in range(numCenter)
-            ]
-        )
-
-    return centroids
-
-
 def histogram_thresholding() -> np.array:
     return np.zeros()
 
@@ -89,9 +72,26 @@ def histogram_clustering() -> np.array:
     return np.zeros(5)
 
 
-def canny_edge_detection() -> np.array:
-    # https://towardsdatascience.com/canny-edge-detection-step-by-step-in-python-computer-vision-b49c3a2d8123
-    return np.zeros(5)
+def canny_edge_detection(img_array: np.array) -> np.array:
+
+    guass = gaussian_kernel(5)
+
+    blurred_image = convolve(img_array, guass)
+    export_image(blurred_image, "edges_blurred.BMP", conf)
+
+    sobel, theta = sobel_filters(blurred_image)
+    export_image(sobel, "edges_sobel.BMP", conf)
+
+    suppresion = non_max_suppression(sobel, theta)
+    export_image(suppresion, "edges_suppresion.BMP", conf)
+
+    threshold_image, weak, strong = threshold(suppresion)
+    export_image(threshold_image, "edges_threshold.BMP", conf)
+
+    canny_image = hysteresis(threshold_image, weak, strong)
+    export_image(canny_image, "edges_canny.BMP", conf)
+
+    return canny_image
 
 
 def apply_operations(files: List[Path]) -> None:
@@ -110,60 +110,31 @@ def apply_operations(files: List[Path]) -> None:
     """
 
     for file in files:
-        print(file.stem)
+        print(f"operating on file.stem")
+
+        img = get_image_data(file)
+        img = select_channel(img, "red")
 
         # Edge detection
-        edges = canny_edge_detection()
+        edges = canny_edge_detection(img)
 
         # Dilation
-        dilated = morph_dilation()
+        # dilated = morph_dilation(img)
 
         # Erosion
-        eroded = morph_erosion()
+        # eroded = morph_erosion(img)
 
         # Histogram Clustering Segmentation
-        segmented_clustering = histogram_clustering()
+        # segmented_clustering = histogram_clustering(img)
 
         # Histogram Thresholding Segmentation
-        segmented_thresholding = histogram_thresholding()
+        # segmented_thresholding = histogram_thresholding(img)
 
-        export_image(edges, f"edges_{file.stem}.BMP")
-        export_image(dilated, f"dilated_{file.stem}.BMP")
-        export_image(eroded, f"eroded_{file.stem}.BMP")
-        export_image(segmented_clustering, f"seg_clusting_{file.stem}.BMP")
-        export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP")
-
-
-def select_channel(img_array: np.array, color: str = "red") -> np.array:
-    """
-    select_channel isolates a color channel from a RGB image represented as a numpy array.
-    """
-    if color == "red":
-        return img_array[:, :, 0]
-
-    elif color == "green":
-        return img_array[:, :, 1]
-
-    elif color == "blue":
-        return img_array[:, :, 2]
-
-
-def export_image(img_arr: np.array, filename: str) -> None:
-    """
-    Exports a numpy array as a grey scale bmp image
-    """
-    img = Image.fromarray(img_arr)
-    img = img.convert("L")
-    img.save(conf["OUTPUT_DIR"] + filename + conf["FILE_EXTENSION"])
-
-
-def get_image_data(filename: Path) -> np.array:
-    """
-    Converts a bmp image to a numpy array
-    """
-
-    with Image.open(filename) as img:
-        return np.array(img)
+        # export_image(edges, f"edges_{file.stem}.BMP")
+        # export_image(dilated, f"dilated_{file.stem}.BMP")
+        # export_image(eroded, f"eroded_{file.stem}.BMP")
+        # export_image(segmented_clustering, f"seg_clusting_{file.stem}.BMP")
+        # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP")
 
 
 @click.command()
@@ -193,7 +164,7 @@ def main(config_location: str):
     Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
 
     # [!!!] Only for development
-    DATA_SUBSET = 5
+    DATA_SUBSET = 1
     files = files[:DATA_SUBSET]
 
     t0 = time.time()

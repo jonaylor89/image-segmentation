@@ -80,8 +80,6 @@ def mean_square_error(original_img: np.array, quantized_img: np.array) -> int:
     return mse
 
 
-
-
 @njit
 def gaussian_noise(img_array: np.array, sigma: int) -> np.array:
     """
@@ -98,48 +96,6 @@ def gaussian_noise(img_array: np.array, sigma: int) -> np.array:
     gauss = img_array + shaped_noise
 
     return gauss
-
-
-@njit(fastmath=True)
-def apply_filter(img_array: np.array, img_filter: np.array) -> np.array:
-    """
-    Applies a linear filter to a copy of an image based on filter weights
-    """
-
-    rows, cols = img_array.shape
-    height, width = img_filter.shape
-
-    output = np.zeros((rows - height + 1, cols - width + 1))
-
-    for rr in range(rows - height + 1):
-        for cc in range(cols - width + 1):
-            for hh in range(height):
-                for ww in range(width):
-                    imgval = img_array[rr + hh, cc + ww]
-                    filterval = img_filter[hh, ww]
-                    output[rr, cc] += imgval * filterval
-
-    return output
-
-
-def linear_filter(
-    img_array: np.array, mask_size: int, weights: List[List[int]]
-) -> np.array:
-
-    """
-    linear_filter uses a kernel or matrix of weights,
-    given as a two dimensional List,
-    and applies that kernel to a copy of an image.
-    Applying the filter loops through every pixel in the image
-    and multiples the values of the neighboring pixels by the weights in the kernel.
-    The larger the kernel, the larger the neighborhood of pixels
-    that affect the pixel being operated on at any given moment.
-    """
-
-    filter = np.array(weights)
-    linear = apply_filter(img_array, filter)
-
-    return linear
 
 
 @njit(fastmath=True)
