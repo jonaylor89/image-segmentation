@@ -126,8 +126,8 @@ def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
 
     weak_i, weak_j = np.where((img <= highThreshold) & (img >= lowThreshold))
 
-    res[strong_i][strong_j] = strong
-    res[weak_i][weak_j] = weak
+    res[strong_i, strong_j] = strong
+    res[weak_i, weak_j] = weak
 
     return res, weak, strong
 
