@@ -1,3 +1,4 @@
+import random
 import numpy as np
 from PIL import Image
 from math import sqrt
@@ -48,7 +49,7 @@ def non_max_suppression(img, D):
     return Z
 
 
-@njit(fastmath=True)
+@njit(fastmath=True, cache=True)
 def fast_suppression(img, angle, N, M, Z):
     for i in range(1, M - 1):
         for j in range(1, N - 1):
@@ -84,7 +85,7 @@ def fast_suppression(img, angle, N, M, Z):
     return Z
 
 
-# @njit(fastmath=True)
+# @njit(fastmath=True, cache=True)
 def gaussian_kernel(size, sigma=1):
     size = int(size) // 2
     x, y = np.mgrid[-size: size + 1, -size: size + 1]
@@ -94,7 +95,7 @@ def gaussian_kernel(size, sigma=1):
     return g
 
 
-@njit(fastmath=True)
+@njit(fastmath=True, cache=True)
 def sobel_filters(img):
     Kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], np.float32)
     Ky = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], np.float32)
@@ -109,7 +110,7 @@ def sobel_filters(img):
     return G, theta
 
 
-# @njit(fastmath=True)
+# @njit(fastmath=True, cache=True)
 def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
     highThreshold = img.max() * highThresholdRatio
     lowThreshold = highThreshold * lowThresholdRatio
@@ -131,7 +132,7 @@ def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
     return res, weak, strong
 
 
-@njit(fastmath=True)
+@njit(fastmath=True, cache=True)
 def hysteresis(img, weak, strong=255):
     M, N = img.shape
     for i in range(1, M - 1):
@@ -156,7 +157,7 @@ def hysteresis(img, weak, strong=255):
     return img
 
 
-@njit(fastmath=True)
+@njit(fastmath=True, cache=True)
 def convolve(img_array: np.array, img_filter: np.array) -> np.array:
     """
     Applies a filter to a copy of an image based on filter weights
@@ -178,32 +179,31 @@ def convolve(img_array: np.array, img_filter: np.array) -> np.array:
     return output
 
 
-@njit(parallel=True)
-def kmeans(
-        A: np.array, numCenter: int, numIter: int, size: int, features: int
+#@njit(parallel=True, cache=True)
+def k_means(
+        arr: np.array, k: int, num_iter: int = 5,
 ) -> np.array:
-    # https://github.com/numba/numba/blob/master/examples/k-means/k-means_numba.py
-    centroids = np.random.ranf((numCenter, features))
 
-    for l in range(numIter):
+    size = len(arr)
+    centroids = np.array([random.randint(0, size) for _ in range(k)])
+
+    for _ in range(num_iter):
         dist = np.array(
             [
                 [
-                    sqrt(np.sum((A[i, :] - centroids[j, :]) ** 2))
-                    for j in range(numCenter)
+                    sqrt(np.sum(np.array((arr[i] - centroids[j]) ** 2)))
+                    for j in range(k)
                 ]
                 for i in range(size)
             ]
         )
+
         labels = np.array([dist[i, :].argmin() for i in range(size)])
 
         centroids = np.array(
             [
-                [
-                    np.sum(A[labels == i, j]) / np.sum(labels == i)
-                    for j in range(features)
-                ]
-                for i in range(numCenter)
+                np.sum(arr[labels == i]) / len(labels == i)
+                for i in range(k)
             ]
         )
 

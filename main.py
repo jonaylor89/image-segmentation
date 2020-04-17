@@ -19,6 +19,7 @@ from utils import (
     non_max_suppression,
     threshold,
     hysteresis,
+    k_means,
 )
 
 conf: Optional[dict] = None
@@ -105,32 +106,37 @@ def apply_operations(files: List[Path]) -> None:
     """
 
     for file in files:
-        print(f"operating on {file.stem}")
+        try:
+            print(f"operating on {file.stem}")
 
-        img = get_image_data(file)
-        img = select_channel(img, "red")
+            img = get_image_data(file)
+            img = select_channel(img, conf["COLOR_CHANNEL"])
 
-        # Edge detection
-        edges = canny_edge_detection(img)
+            # Edge detection
+            edges = canny_edge_detection(img)
 
-        # Dilation
-        # dilated = morph_dilation(img)
+            img_hist = histogram(img)
+            out = k_means(img_hist, 2)
+            # Histogram Clustering Segmentation
+            # segmented_clustering = histogram_clustering(img)
 
-        # Erosion
-        # eroded = morph_erosion(img)
+            # Histogram Thresholding Segmentation
+            # segmented_thresholding = histogram_thresholding(img)
 
-        # Histogram Clustering Segmentation
-        # segmented_clustering = histogram_clustering(img)
+            # Dilation
+            # dilated = morph_dilation(img)
 
-        # Histogram Thresholding Segmentation
-        # segmented_thresholding = histogram_thresholding(img)
+            # Erosion
+            # eroded = morph_erosion(img)
 
-        # export_image(edges, f"edges_{file.stem}.BMP")
-        # export_image(dilated, f"dilated_{file.stem}.BMP")
-        # export_image(eroded, f"eroded_{file.stem}.BMP")
-        # export_image(segmented_clustering, f"seg_clusting_{file.stem}.BMP")
-        # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP")
+            export_image(edges, f"edges_{file.stem}.BMP", conf)
+            # export_image(segmented_clustering, f"seg_clusting_{file.stem}.BMP")
+            # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP")
+            # export_image(dilated, f"dilated_{file.stem}.BMP")
+            # export_image(eroded, f"eroded_{file.stem}.BMP")
 
+        except Exception as e:
+            secho(f"[ERROR] {e}", fg="red")
 
 @click.command()
 @click.option(
@@ -159,7 +165,7 @@ def main(config_location: str):
     Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
 
     # [!!!] Only for development
-    DATA_SUBSET = 1
+    DATA_SUBSET = 10
     files = files[:DATA_SUBSET]
 
     t0 = time.time()
