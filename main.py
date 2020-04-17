@@ -57,8 +57,42 @@ def histogram(img_array: np.array) -> np.array:
     return hist
 
 
-def morph_dilation(img_arr: np.array) -> np.array:
-    return np.zeros(5)
+def morph_dilation(img_arr: np.array, win: int = 1) -> np.array:
+    # -- dilates a 2D numpy array holding a binary image
+
+    r = np.zeros(img_arr.shape)
+    [yy, xx] = np.where(img_arr > 0)
+
+    # prepare neighboroods
+    off = np.tile(range(-win, win + 1), (2 * win + 1, 1))
+    x_off = off.flatten()
+    y_off = off.T.flatten()
+
+    # duplicate each neighborhood element for each index
+    n = len(xx.flatten())
+    x_off = np.tile(x_off, (n, 1)).flatten()
+    y_off = np.tile(y_off, (n, 1)).flatten()
+
+    # round out offset
+    ind = np.sqrt(x_off ** 2 + y_off ** 2) > win
+    x_off[ind] = 0
+    y_off[ind] = 0
+
+    # duplicate each index for each neighborhood element
+    xx = np.tile(xx, ((2 * win + 1) ** 2))
+    yy = np.tile(yy, ((2 * win + 1) ** 2))
+
+    nx = xx + x_off
+    ny = yy + y_off
+
+    # bounds checking
+    ny[ny < 0] = 0
+    ny[ny > img_arr.shape[0] - 1] = img_arr.shape[0] - 1
+    nx[nx < 0] = 0
+    nx[nx > img_arr.shape[1] - 1] = img_arr.shape[1] - 1
+    r[ny, nx] = 1
+
+    return r
 
 
 def morph_erosion(img_arr: np.array) -> np.array:
@@ -130,16 +164,16 @@ def apply_operations(files: List[Path]) -> None:
         # segmented_thresholding = histogram_thresholding(img)
 
         # Dilation
-        # dilated = morph_dilation(img)
+        dilated = morph_dilation(segmented_clustering)
 
         # Erosion
         # eroded = morph_erosion(img)
 
         export_image(edges, f"edges_{file.stem}", conf)
         export_image(segmented_clustering, f"seg_clusting_{file.stem}", conf)
-        # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP")
-        # export_image(dilated, f"dilated_{file.stem}.BMP")
-        # export_image(eroded, f"eroded_{file.stem}.BMP")
+        # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP", conf)
+        export_image(dilated, f"dilated_{file.stem}.BMP", conf)
+        # export_image(eroded, f"eroded_{file.stem}.BMP", conf)
 
 
 
