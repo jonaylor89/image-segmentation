@@ -179,7 +179,7 @@ def convolve(img_array: np.array, img_filter: np.array) -> np.array:
     return output
 
 
-#@njit(parallel=True, cache=True)
+# @njit(parallel=True, cache=True)
 def k_means(
         arr: np.array, k: int, num_iter: int = 5,
 ) -> np.array:

@@ -6,7 +6,7 @@ import click
 import numpy as np
 from numba import njit
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Dict
 from click import clear, echo, style, secho
 
 from utils import (
@@ -22,7 +22,7 @@ from utils import (
     k_means,
 )
 
-conf: Optional[dict] = None
+conf: Dict[str, Any] = {}
 
 
 @njit(fastmath=True)
@@ -57,20 +57,29 @@ def histogram(img_array: np.array) -> np.array:
     return hist
 
 
-def morph_dilation() -> np.array:
+def morph_dilation(img_arr: np.array) -> np.array:
     return np.zeros(5)
 
 
-def morph_erosion() -> np.array:
+def morph_erosion(img_arr: np.array) -> np.array:
     return np.zeros(5)
 
 
-def histogram_thresholding() -> np.array:
-    return np.zeros()
-
-
-def histogram_clustering() -> np.array:
+def histogram_thresholding(img_arr: np.array) -> np.array:
     return np.zeros(5)
+
+
+def histogram_clustering(img_arr: np.array) -> np.array:
+    img_hist = histogram(img_arr)
+    out = k_means(img_hist, 2)
+
+    diff = +(out[1] - out[1])
+
+    img_copy = np.array([0 if v > diff else 255 for v in img_arr.flat])
+
+    img_copy = img_copy.astype(np.uint8)
+
+    return img_copy.reshape(img_arr.shape)
 
 
 def canny_edge_detection(img_array: np.array) -> np.array:
@@ -106,37 +115,33 @@ def apply_operations(files: List[Path]) -> None:
     """
 
     for file in files:
-        try:
-            print(f"operating on {file.stem}")
+        print(f"operating on {file.stem}")
 
-            img = get_image_data(file)
-            img = select_channel(img, conf["COLOR_CHANNEL"])
+        img = get_image_data(file)
+        img = select_channel(img, conf["COLOR_CHANNEL"])
 
-            # Edge detection
-            edges = canny_edge_detection(img)
+        # Edge detection
+        edges = canny_edge_detection(img)
 
-            img_hist = histogram(img)
-            out = k_means(img_hist, 2)
-            # Histogram Clustering Segmentation
-            # segmented_clustering = histogram_clustering(img)
+        # Histogram Clustering Segmentation
+        segmented_clustering = histogram_clustering(img)
 
-            # Histogram Thresholding Segmentation
-            # segmented_thresholding = histogram_thresholding(img)
+        # Histogram Thresholding Segmentation
+        # segmented_thresholding = histogram_thresholding(img)
 
-            # Dilation
-            # dilated = morph_dilation(img)
+        # Dilation
+        # dilated = morph_dilation(img)
 
-            # Erosion
-            # eroded = morph_erosion(img)
+        # Erosion
+        # eroded = morph_erosion(img)
 
-            export_image(edges, f"edges_{file.stem}.BMP", conf)
-            # export_image(segmented_clustering, f"seg_clusting_{file.stem}.BMP")
-            # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP")
-            # export_image(dilated, f"dilated_{file.stem}.BMP")
-            # export_image(eroded, f"eroded_{file.stem}.BMP")
+        export_image(edges, f"edges_{file.stem}", conf)
+        export_image(segmented_clustering, f"seg_clusting_{file.stem}", conf)
+        # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP")
+        # export_image(dilated, f"dilated_{file.stem}.BMP")
+        # export_image(eroded, f"eroded_{file.stem}.BMP")
 
-        except Exception as e:
-            secho(f"[ERROR] {e}", fg="red")
+
 
 @click.command()
 @click.option(
@@ -165,7 +170,7 @@ def main(config_location: str):
     Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
 
     # [!!!] Only for development
-    DATA_SUBSET = 10
+    DATA_SUBSET = 1
     files = files[:DATA_SUBSET]
 
     t0 = time.time()
