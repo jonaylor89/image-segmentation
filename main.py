@@ -75,7 +75,7 @@ def histogram_clustering(img_arr: np.array) -> np.array:
 
     diff = +(out[1] - out[1])
 
-    img_copy = np.array([0 if v > diff else 255 for v in img_arr.flat])
+    img_copy = np.array([255 if v > diff else 0 for v in img_arr.flat])
 
     img_copy = img_copy.astype(np.uint8)
 
