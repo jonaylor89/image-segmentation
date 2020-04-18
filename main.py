@@ -100,15 +100,13 @@ def dilate(img_arr: np.array, win: int = 1) -> np.array:
     return r
 
 
-def erode(
-    img_arr: np.array,
-    structure_elem: List[List[int]] = [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
-) -> np.array:
+def erode(img_arr: np.array) -> np.array:
 
-    b = np.array(structure_elem)
-    print(structure_elem)
+    inverted_img = np.invert(img_arr)
+    dilated_inverse = dilate(inverted_img)
+    eroded_img = np.invert(dilated_inverse)
 
-    return img_arr
+    return eroded_img
 
 
 def histogram_thresholding(img_arr: np.array) -> np.array:
@@ -179,7 +177,7 @@ def apply_operations(files: List[Path]) -> None:
         dilated = dilate(segmented_clustering)
 
         # Erosion
-        # eroded = erode(img, conf["EROSION_STRUCTURAL_ELEMENT"])
+        # eroded = erode(img)
 
         export_image(edges, f"edges_{file.stem}", conf)
         export_image(segmented_clustering, f"seg_clusting_{file.stem}", conf)
