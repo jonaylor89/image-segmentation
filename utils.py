@@ -180,7 +180,7 @@ def convolve(img_array: np.array, img_filter: np.array) -> np.array:
 
 
 # @njit
-def find_middle_hist(hist: np.array, min_count: int =5) -> int:
+def find_middle_hist(hist: np.array, min_count: int = 5) -> int:
 
     """Balanced histogram thresholding."""
     n_bins = len(hist)  # assumes 1D histogram
@@ -193,7 +193,7 @@ def find_middle_hist(hist: np.array, min_count: int =5) -> int:
     # use mean intensity of histogram as center; alternatively: (h_s + h_e) / 2)
     h_c = int(round(np.average(np.linspace(0, 2 ** 8 - 1, n_bins), weights=hist)))
     w_l = np.sum(hist[h_s:h_c])  # weight in the left part
-    w_r = np.sum(hist[h_c: h_e + 1])  # weight in the right part
+    w_r = np.sum(hist[h_c : h_e + 1])  # weight in the right part
 
     while h_s < h_e:
         if w_l > w_r:  # left part became heavier
@@ -214,6 +214,7 @@ def find_middle_hist(hist: np.array, min_count: int =5) -> int:
         h_c = new_c
 
     return h_c
+
 
 # @njit(parallel=True, cache=True)
 def k_means(arr: np.array, k: int, num_iter: int = 5) -> np.array:
