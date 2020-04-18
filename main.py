@@ -5,7 +5,9 @@ import toml
 import click
 import numpy as np
 from numba import njit
+from tqdm import tqdm
 from pathlib import Path
+from multiprocessing import Pool
 from typing import Any, List, Dict
 from click import clear, echo, style, secho
 
@@ -19,6 +21,7 @@ from utils import (
     non_max_suppression,
     threshold,
     hysteresis,
+    find_middle_hist,
     k_means,
 )
 
@@ -57,7 +60,7 @@ def histogram(img_array: np.array) -> np.array:
     return hist
 
 
-def dilate(img_arr: np.array, win: int = 1) -> np.array:
+def erode(img_arr: np.array, win: int = 1) -> np.array:
     """
 
     dilates a 2D numpy array holding a binary image
@@ -100,17 +103,28 @@ def dilate(img_arr: np.array, win: int = 1) -> np.array:
     return r
 
 
-def erode(img_arr: np.array) -> np.array:
+def dilate(img_arr: np.array) -> np.array:
 
     inverted_img = np.invert(img_arr)
-    dilated_inverse = dilate(inverted_img)
-    eroded_img = np.invert(dilated_inverse)
+    eroded_inverse = erode(inverted_img).astype(np.uint8)
+    eroded_img = np.invert(eroded_inverse)
 
     return eroded_img
 
 
 def histogram_thresholding(img_arr: np.array) -> np.array:
-    return np.zeros(5)
+
+    hist = histogram(img_arr)
+
+    middle = find_middle_hist(hist)
+
+    img_copy = img_arr.copy()
+    img_copy[img_copy > middle] = 255
+    img_copy[img_copy < middle] = 0
+
+    img_copy = img_copy.astype(np.uint8)
+
+    return img_copy.reshape(img_arr.shape)
 
 
 def histogram_clustering(img_arr: np.array) -> np.array:
@@ -119,7 +133,9 @@ def histogram_clustering(img_arr: np.array) -> np.array:
 
     diff = +(out[1] - out[1])
 
-    img_copy = np.array([255 if v > diff else 0 for v in img_arr.flat])
+    img_copy = img_arr.copy()
+    img_copy[img_copy > diff] = 255
+    img_copy[img_copy < diff] = 0
 
     img_copy = img_copy.astype(np.uint8)
 
@@ -143,7 +159,7 @@ def canny_edge_detection(img_array: np.array) -> np.array:
     return canny_image
 
 
-def apply_operations(files: List[Path]) -> None:
+def apply_operations(file: Path) -> str:
     """
     Image segmentation–requirement for the project part 2:
     1. Implement one selected edge detection algorithm.
@@ -158,9 +174,7 @@ def apply_operations(files: List[Path]) -> None:
         / segmentation for each respective class of cells (seven in total)
     """
 
-    for file in files:
-        print(f"operating on {file.stem}")
-
+    try:
         img = get_image_data(file)
         img = select_channel(img, conf["COLOR_CHANNEL"])
 
@@ -171,19 +185,40 @@ def apply_operations(files: List[Path]) -> None:
         segmented_clustering = histogram_clustering(img)
 
         # Histogram Thresholding Segmentation
-        # segmented_thresholding = histogram_thresholding(img)
+        segmented_thresholding = histogram_thresholding(img)
 
         # Dilation
-        dilated = dilate(segmented_clustering)
+        dilated = dilate(segmented_thresholding)
 
         # Erosion
-        # eroded = erode(img)
+        eroded = erode(segmented_thresholding)
 
         export_image(edges, f"edges_{file.stem}", conf)
         export_image(segmented_clustering, f"seg_clusting_{file.stem}", conf)
-        # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP", conf)
+        export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP", conf)
         export_image(dilated, f"dilated_{file.stem}.BMP", conf)
-        # export_image(eroded, f"eroded_{file.stem}.BMP", conf)
+        export_image(eroded, f"eroded_{file.stem}.BMP", conf)
+    except Exception as e:
+        return style(f"[ERROR] {file.stem} has an issue: {e}", fg="red")
+
+    return style(f"{f'[INFO:{file.stem}]':15}", fg="green")
+
+
+def parallel_operations(files: List[Path]):
+    """
+    Batch operates on a set of images in a multiprocess pool
+    """
+
+    echo(
+        style("[INFO] ", fg="green")
+        + f"initilizing process pool (number of processes: {conf['NUM_OF_PROCESSES']})"
+    )
+    echo(style("[INFO] ", fg="green") + "compiling...")
+    with Pool(conf["NUM_OF_PROCESSES"]) as p:
+        with tqdm(total=len(files)) as pbar:
+            for res in tqdm(p.imap(apply_operations, files)):
+                pbar.write(res + f" finished...")
+                pbar.update()
 
 
 @click.command()
@@ -213,11 +248,11 @@ def main(config_location: str):
     Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
 
     # [!!!] Only for development
-    DATA_SUBSET = 1
-    files = files[:DATA_SUBSET]
+    # DATA_SUBSET = 10
+    # files = files[:DATA_SUBSET]
 
     t0 = time.time()
-    apply_operations(files)
+    parallel_operations(files)
     t_delta = time.time() - t0
 
     print()
