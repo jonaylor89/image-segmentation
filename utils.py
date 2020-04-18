@@ -214,58 +214,77 @@ def convolve(img_array: np.array, img_filter: np.array) -> np.array:
 # @njit
 def find_middle_hist(hist: np.array, min_count: int = 5) -> int:
 
-    """Balanced histogram thresholding."""
-    n_bins = len(hist)  # assumes 1D histogram
-    h_s = 0
-    while hist[h_s] < min_count:
-        h_s += 1  # ignore small counts at start
-    h_e = n_bins - 1
-    while hist[h_e] < min_count:
-        h_e -= 1  # ignore small counts at end
-    # use mean intensity of histogram as center; alternatively: (h_s + h_e) / 2)
-    h_c = int(round(np.average(np.linspace(0, 2 ** 8 - 1, n_bins), weights=hist)))
-    w_l = np.sum(hist[h_s:h_c])  # weight in the left part
-    w_r = np.sum(hist[h_c : h_e + 1])  # weight in the right part
+    num_bins = len(hist)
+    hist_start = 0
+    while hist[hist_start] < min_count:
+        hist_start += 1  # ignore small counts at start
 
-    while h_s < h_e:
-        if w_l > w_r:  # left part became heavier
-            w_l -= hist[h_s]
-            h_s += 1
+    hist_end = num_bins - 1
+    while hist[hist_end] < min_count:
+        hist_end -= 1  # ignore small counts at end
+
+    hist_center = int(round(np.average(np.linspace(0, 2 ** 8 - 1, num_bins), weights=hist)))
+    left = np.sum(hist[hist_start:hist_center])
+    right = np.sum(hist[hist_center : hist_end + 1])
+
+    while hist_start < hist_end:
+        if left > right:  # left part became heavier
+            left -= hist[hist_start]
+            hist_start += 1
         else:  # right part became heavier
-            w_r -= hist[h_e]
-            h_e -= 1
-        new_c = int(round((h_e + h_s) / 2))  # re-center the weighing scale
+            right -= hist[hist_end]
+            hist_end -= 1
+        new_center = int(round((hist_end + hist_start) / 2))  # re-center the weighing scale
 
-        if new_c < h_c:  # move bin to the other side
-            w_l -= hist[h_c]
-            w_r += hist[h_c]
-        elif new_c > h_c:
-            w_l += hist[h_c]
-            w_r -= hist[h_c]
+        if new_center < hist_center:  # move bin to the other side
+            left -= hist[hist_center]
+            right += hist[hist_center]
+        elif new_center > hist_center:
+            left += hist[hist_center]
+            right -= hist[hist_center]
 
-        h_c = new_c
+        hist_center = new_center
 
-    return h_c
+    return hist_center
 
 
 # @njit(parallel=True, cache=True)
-def k_means(arr: np.array, k: int, num_iter: int = 5) -> np.array:
+def k_means(arr: np.array, k: int, num_iter: int = 1) -> np.array:
 
     size = len(arr)
     centroids = np.array([random.randint(0, size) for _ in range(k)])
 
+    while centroids[0] == centroids[1]:
+        centroids = np.array([random.randint(0, size) for _ in range(k)])
+
+    print("INIT", centroids)
+
     for _ in range(num_iter):
         dist = np.array(
             [
-                [sqrt(np.sum(np.array((arr[i] - centroids[j]) ** 2))) for j in range(k)]
+                [
+                    sqrt(
+                        np.sum(
+                            np.array((arr[i] - centroids[j]) ** 2)
+                        )
+                    )
+                    for j in range(k)
+                ]
                 for i in range(size)
             ]
         )
 
+        print("D", dist, dist.shape)
+
         labels = np.array([dist[i, :].argmin() for i in range(size)])
 
-        centroids = np.array(
-            [np.sum(arr[labels == i]) / len(labels == i) for i in range(k)]
-        )
+        print("L", labels, labels.shape)
+
+        centroids = np.array([
+            np.sum(arr[labels == i]) / len(labels == i)
+            for i in range(k)
+        ])
+
+        print("C", centroids, centroids.shape)
 
     return centroids

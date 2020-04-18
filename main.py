@@ -216,11 +216,12 @@ def main(config_location: str):
     Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
 
     # [!!!] Only for development
-    # DATA_SUBSET = 10
-    # files = files[:DATA_SUBSET]
+    DATA_SUBSET = 1
+    files = files[:DATA_SUBSET]
 
     t0 = time.time()
-    parallel_operations(files)
+    # parallel_operations(files)
+    histogram_clustering(get_image_data(files[0]))
     t_delta = time.time() - t0
 
     print()
