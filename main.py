@@ -31,7 +31,7 @@ conf: Dict[str, Any] = {}
 def erode(img_arr: np.array, win: int = 1) -> np.array:
     """
 
-    dilates a 2D numpy array holding a binary image
+    erodes 2D numpy array holding a binary image
 
     """
 
@@ -71,10 +71,10 @@ def erode(img_arr: np.array, win: int = 1) -> np.array:
     return r
 
 
-def dilate(img_arr: np.array) -> np.array:
+def dilate(img_arr: np.array, win: int = 1) -> np.array:
 
     inverted_img = np.invert(img_arr)
-    eroded_inverse = erode(inverted_img).astype(np.uint8)
+    eroded_inverse = erode(inverted_img, win).astype(np.uint8)
     eroded_img = np.invert(eroded_inverse)
 
     return eroded_img
@@ -110,11 +110,11 @@ def histogram_clustering(img_arr: np.array) -> np.array:
     return img_copy.reshape(img_arr.shape)
 
 
-def canny_edge_detection(img_array: np.array) -> np.array:
+def canny_edge_detection(img_arr: np.array) -> np.array:
 
     guass = gaussian_kernel(5)
 
-    blurred_image = convolve(img_array, guass)
+    blurred_image = convolve(img_arr, guass)
 
     sobel, theta = sobel_filters(blurred_image)
 
