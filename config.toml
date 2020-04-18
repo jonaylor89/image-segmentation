@@ -29,28 +29,11 @@ NUM_OF_PROCESSES = 10
 #################################################
 COLOR_CHANNEL = "red"
 
-#####################################################################
+################################################
 #
-# LINEAR_MASK and MEDIAN_MASK:
-#
-# These are the mask sizes for the linear and median filter
-#
-# They must be square numbers (e.g. 1, 9, 16, etc.)
-# and equal to the size of the weights array
-#
-# LINEAR_WEIGHTS and MEDIAN_WEIGHTS:
-#
-# These are the actual weights used on the images to manipulate them
-#
-# The value for these must be square, 2D lists
-#
-#####################################################################
-LINEAR_MASK = 9
-LINEAR_WEIGHTS = [
-  [0, 0, 0],
-  [0, 1, 0],
-  [0, 0, 0]
+################################################
+EROSION_STRUCTURAL_ELEMENT = [
+    [0, 1, 0],
+    [1, 1, 1],
+    [0, 1, 0]
 ]
-
-MEDIAN_MASK = 1
-MEDIAN_WEIGHTS = [[1]]

@@ -88,7 +88,7 @@ def fast_suppression(img, angle, N, M, Z):
 # @njit(fastmath=True, cache=True)
 def gaussian_kernel(size, sigma=1):
     size = int(size) // 2
-    x, y = np.mgrid[-size: size + 1, -size: size + 1]
+    x, y = np.mgrid[-size : size + 1, -size : size + 1]
     normal = 1 / (2.0 * np.pi * sigma ** 2)
     g = np.exp(-((x ** 2 + y ** 2) / (2.0 * sigma ** 2))) * normal
 
@@ -140,14 +140,14 @@ def hysteresis(img, weak, strong=255):
             if img[i, j] == weak:
                 try:
                     if (
-                            (img[i + 1, j - 1] == strong)
-                            or (img[i + 1, j] == strong)
-                            or (img[i + 1, j + 1] == strong)
-                            or (img[i, j - 1] == strong)
-                            or (img[i, j + 1] == strong)
-                            or (img[i - 1, j - 1] == strong)
-                            or (img[i - 1, j] == strong)
-                            or (img[i - 1, j + 1] == strong)
+                        (img[i + 1, j - 1] == strong)
+                        or (img[i + 1, j] == strong)
+                        or (img[i + 1, j + 1] == strong)
+                        or (img[i, j - 1] == strong)
+                        or (img[i, j + 1] == strong)
+                        or (img[i - 1, j - 1] == strong)
+                        or (img[i - 1, j] == strong)
+                        or (img[i - 1, j + 1] == strong)
                     ):
                         img[i, j] = strong
                     else:
@@ -180,9 +180,7 @@ def convolve(img_array: np.array, img_filter: np.array) -> np.array:
 
 
 # @njit(parallel=True, cache=True)
-def k_means(
-        arr: np.array, k: int, num_iter: int = 5,
-) -> np.array:
+def k_means(arr: np.array, k: int, num_iter: int = 5) -> np.array:
 
     size = len(arr)
     centroids = np.array([random.randint(0, size) for _ in range(k)])
@@ -190,10 +188,7 @@ def k_means(
     for _ in range(num_iter):
         dist = np.array(
             [
-                [
-                    sqrt(np.sum(np.array((arr[i] - centroids[j]) ** 2)))
-                    for j in range(k)
-                ]
+                [sqrt(np.sum(np.array((arr[i] - centroids[j]) ** 2))) for j in range(k)]
                 for i in range(size)
             ]
         )
@@ -201,10 +196,7 @@ def k_means(
         labels = np.array([dist[i, :].argmin() for i in range(size)])
 
         centroids = np.array(
-            [
-                np.sum(arr[labels == i]) / len(labels == i)
-                for i in range(k)
-            ]
+            [np.sum(arr[labels == i]) / len(labels == i) for i in range(k)]
         )
 
     return centroids

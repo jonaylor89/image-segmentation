@@ -57,13 +57,17 @@ def histogram(img_array: np.array) -> np.array:
     return hist
 
 
-def morph_dilation(img_arr: np.array, win: int = 1) -> np.array:
-    # -- dilates a 2D numpy array holding a binary image
+def dilate(img_arr: np.array, win: int = 1) -> np.array:
+    """
+
+    dilates a 2D numpy array holding a binary image
+
+    """
 
     r = np.zeros(img_arr.shape)
     [yy, xx] = np.where(img_arr > 0)
 
-    # prepare neighboroods
+    # prepare neighborhoods
     off = np.tile(range(-win, win + 1), (2 * win + 1, 1))
     x_off = off.flatten()
     y_off = off.T.flatten()
@@ -90,13 +94,21 @@ def morph_dilation(img_arr: np.array, win: int = 1) -> np.array:
     ny[ny > img_arr.shape[0] - 1] = img_arr.shape[0] - 1
     nx[nx < 0] = 0
     nx[nx > img_arr.shape[1] - 1] = img_arr.shape[1] - 1
-    r[ny, nx] = 1
+
+    r[ny, nx] = 255
 
     return r
 
 
-def morph_erosion(img_arr: np.array) -> np.array:
-    return np.zeros(5)
+def erode(
+    img_arr: np.array,
+    structure_elem: List[List[int]] = [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+) -> np.array:
+
+    b = np.array(structure_elem)
+    print(structure_elem)
+
+    return img_arr
 
 
 def histogram_thresholding(img_arr: np.array) -> np.array:
@@ -164,17 +176,16 @@ def apply_operations(files: List[Path]) -> None:
         # segmented_thresholding = histogram_thresholding(img)
 
         # Dilation
-        dilated = morph_dilation(segmented_clustering)
+        dilated = dilate(segmented_clustering)
 
         # Erosion
-        # eroded = morph_erosion(img)
+        # eroded = erode(img, conf["EROSION_STRUCTURAL_ELEMENT"])
 
         export_image(edges, f"edges_{file.stem}", conf)
         export_image(segmented_clustering, f"seg_clusting_{file.stem}", conf)
         # export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP", conf)
         export_image(dilated, f"dilated_{file.stem}.BMP", conf)
         # export_image(eroded, f"eroded_{file.stem}.BMP", conf)
-
 
 
 @click.command()

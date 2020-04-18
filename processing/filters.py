@@ -29,5 +29,3 @@ def mean_square_error(original_img: np.array, quantized_img: np.array) -> int:
     mse = (np.square(original_img - quantized_img)).mean()
 
     return mse
-
-
