@@ -257,8 +257,6 @@ def k_means(arr: np.array, k: int, num_iter: int = 1) -> np.array:
     while centroids[0] == centroids[1]:
         centroids = np.array([random.randint(0, size) for _ in range(k)])
 
-    print("INIT", centroids)
-
     for _ in range(num_iter):
         dist = np.array(
             [
@@ -274,17 +272,11 @@ def k_means(arr: np.array, k: int, num_iter: int = 1) -> np.array:
             ]
         )
 
-        print("D", dist, dist.shape)
-
         labels = np.array([dist[i, :].argmin() for i in range(size)])
 
-        print("L", labels, labels.shape)
-
-        centroids = np.array([
-            np.sum(arr[labels == i]) / len(labels == i)
-            for i in range(k)
-        ])
-
-        print("C", centroids, centroids.shape)
+        for i in range(k):
+            closer = arr[labels == 1]
+            if len(closer) > 0:
+                centroids[i] = np.nanmean(closer)
 
     return centroids

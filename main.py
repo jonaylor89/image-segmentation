@@ -99,7 +99,7 @@ def histogram_clustering(img_arr: np.array) -> np.array:
     img_hist = histogram(img_arr)
     out = k_means(img_hist, 2)
 
-    diff = +(out[1] - out[1])
+    diff = abs(out[1] - out[0])
 
     img_copy = img_arr.copy()
     img_copy[img_copy > diff] = 255
@@ -163,9 +163,9 @@ def apply_operations(file: Path) -> str:
 
         export_image(edges, f"edges_{file.stem}", conf)
         export_image(segmented_clustering, f"seg_clusting_{file.stem}", conf)
-        export_image(segmented_thresholding, f"seg_thresholding_{file.stem}.BMP", conf)
-        export_image(dilated, f"dilated_{file.stem}.BMP", conf)
-        export_image(eroded, f"eroded_{file.stem}.BMP", conf)
+        export_image(segmented_thresholding, f"seg_thresholding_{file.stem}", conf)
+        export_image(dilated, f"dilated_{file.stem}", conf)
+        export_image(eroded, f"eroded_{file.stem}", conf)
     except Exception as e:
         return style(f"[ERROR] {file.stem} has an issue: {e}", fg="red")
 
@@ -216,12 +216,11 @@ def main(config_location: str):
     Path(conf["OUTPUT_DIR"]).mkdir(parents=True, exist_ok=True)
 
     # [!!!] Only for development
-    DATA_SUBSET = 1
-    files = files[:DATA_SUBSET]
+    # DATA_SUBSET = 1
+    # files = files[:DATA_SUBSET]
 
     t0 = time.time()
-    # parallel_operations(files)
-    histogram_clustering(get_image_data(files[0]))
+    parallel_operations(files)
     t_delta = time.time() - t0
 
     print()
