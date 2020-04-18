@@ -38,6 +38,38 @@ def select_channel(img_array: np.array, color: str = "red") -> np.array:
         return img_array[:, :, 2]
 
 
+@njit(fastmath=True)
+def histogram(img_array: np.array) -> np.array:
+    """
+    >> h=zeros(256,1);              OR    >> h=zeros(256,1);
+    >> for l = 0 : 255                    >> for l = 0 : 255
+         for i = 1 : N                          h(l +1)=sum(sum(A == l));
+            for j = 1 : M                    end
+                if (A(i,j) == l)          >> bar(0:255,h);
+                    h(l +1) = h(l +1) +1;
+                end
+            end
+        end
+    end
+    >> bar(0:255,h);
+    """
+
+    # Create blank histogram
+    hist: np.array = np.zeros(256)
+
+    # Get size of pixel array
+    image_size: int = len(img_array)
+
+    for pixel_value in range(256):
+        for i in range(image_size):
+
+            # Loop through pixels to calculate histogram
+            if img_array.flat[i] == pixel_value:
+                hist[pixel_value] += 1
+
+    return hist
+
+
 def non_max_suppression(img, D):
     M, N = img.shape
     Z = np.zeros((M, N), dtype=np.int32)
