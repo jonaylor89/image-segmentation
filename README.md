@@ -53,41 +53,41 @@ The output of this program can be seen in two places. The first is in the output
 
     canny_edge_detection(img_array: np.array) -> np.array
 
-![CMSC%20630%20Project%202/let60.bmp](CMSC%20630%20Project%202/let60.bmp)
+![assets/let60.bmp](assets/let60.bmp)
 
 Original
 
-![CMSC%20630%20Project%202/edges_let60.bmp](CMSC%20630%20Project%202/edges_let60.bmp)
+![assets/edges_let60.bmp](assets/edges_let60.bmp)
 
 After Edge Detection
 
     dilate(img_array: np.array, win: int = 1) -> np.array
 
-![CMSC%20630%20Project%202/svar12.bmp](CMSC%20630%20Project%202/svar12.bmp)
+![assets/svar12.bmp](assets/svar12.bmp)
 
 original
 
-![CMSC%20630%20Project%202/dilated_svar12.BMP.bmp](CMSC%20630%20Project%202/dilated_svar12.BMP.bmp)
+![assets/dilated_svar12.BMP.bmp](assets/dilated_svar12.BMP.bmp)
 
 Segmented and Dilated
 
     erode(img_array: np.array, win: int = 1) -> np.array
 
-![CMSC%20630%20Project%202/svar12.bmp](CMSC%20630%20Project%202/svar12.bmp)
+![assets/svar12.bmp](assets/svar12.bmp)
 
 original
 
-![CMSC%20630%20Project%202/eroded_svar12.BMP.bmp](CMSC%20630%20Project%202/eroded_svar12.BMP.bmp)
+![assets/eroded_svar12.BMP.bmp](assets/eroded_svar12.BMP.bmp)
 
 Segmented and Eroded
 
     histogram_thresholding(img_array: np.array) -> np.array
 
-![CMSC%20630%20Project%202/super14.bmp](CMSC%20630%20Project%202/super14.bmp)
+![assets/super14.bmp](assets/super14.bmp)
 
 original
 
-![CMSC%20630%20Project%202/seg_thresholding_super14.BMP.bmp](CMSC%20630%20Project%202/seg_thresholding_super14.BMP.bmp)
+![assets/seg_thresholding_super14.BMP.bmp](assets/seg_thresholding_super14.BMP.bmp)
 
 segmented
 
@@ -95,10 +95,10 @@ segmented
 
 ---
 
-![CMSC%20630%20Project%202/let92.bmp](CMSC%20630%20Project%202/let92.bmp)
+![assets/let92.bmp](assets/let92.bmp)
 
 original
 
-![CMSC%20630%20Project%202/seg_clusting_mod92.bmp](CMSC%20630%20Project%202/seg_clusting_mod92.bmp)
+![assets/seg_clusting_mod92.bmp](assets/seg_clusting_mod92.bmp)
 
 segmented
