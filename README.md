@@ -95,10 +95,10 @@ segmented
 
 ---
 
-![assets/inter25.bmp](assets/inter25.bmp)
+![assets/inter25.bmp](assets/inter25.BMP)
 
 original
 
-![assets/seg_clusting_inter25.bmp](assets/seg_clusting_inter25.bmp)
+![assets/seg_clusting_inter25.bmp](assets/seg_clusting_inter25.BMP)
 
 segmented
