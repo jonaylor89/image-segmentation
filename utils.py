@@ -249,7 +249,7 @@ def find_middle_hist(hist: np.array, min_count: int = 5) -> int:
 
 
 # @njit(parallel=True, cache=True)
-def k_means(arr: np.array, k: int, num_iter: int = 1) -> np.array:
+def k_means(arr: np.array, k: int, num_iter: int = 5) -> np.array:
 
     size = len(arr)
     centroids = np.array([random.randint(0, size) for _ in range(k)])
