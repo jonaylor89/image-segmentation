@@ -1,6 +1,7 @@
 
 # datasets
 datasets/
+dataset/
 
 # Python
 .mypy_cache/

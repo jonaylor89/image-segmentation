@@ -12,9 +12,9 @@
 # (i.e. -v $HOME/Repos/CMSC630_Project_2/datasets:/app/datasets)
 #
 #####################################################################
-DATA_DIR = "datasets/Cancerous_cell_smears"
-OUTPUT_DIR = "datasets/output/"
-FILE_EXTENSION = ".BMP"
+DATA_DIR = "dataset/input"
+OUTPUT_DIR = "dataset/output/"
+FILE_EXTENSION = ".jpg"
 
 # The number of process workers in the process pool for work on batches
 NUM_OF_PROCESSES = 10
